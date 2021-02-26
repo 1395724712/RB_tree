@@ -54,3 +54,42 @@ void rightRotate(RB_TreeNode* curNode)
 		curGar->left = newRoot;
 	}
 }
+
+void insert(RB_TreeNode * root, nodeValType v)
+{
+	/*
+	 * 功能:在红黑树中插入值为v的节点
+	 * 步骤:1 声明新节点,并找到插入位置
+	 * 2 修改指针指向
+	 * 3 运行修正函数
+	 */
+	
+	//声明新节点
+	RB_TreeNode* curNode = new RB_TreeNode(v);
+	curNode->col = RED;
+	RB_TreeNode* curPar = root;
+	RB_TreeNode* cur = root;
+	
+	//寻找插入位置
+	while(cur!=nullptr)
+	{
+		curPar = cur;
+		if (cur->val > v) cur = cur->left;
+		else cur = cur->right;
+	}
+
+	if(curPar==nullptr)
+	{
+		head.left = curNode;
+		curNode->par = &head;
+	}
+	
+	curNode->par = curPar;
+	
+	//修改指针指向
+	if (curPar->val < v) curPar->left = curNode;
+	else curPar->right = curNode;
+
+	//运行修正函数
+	insertFixup(root, curNode);
+}
