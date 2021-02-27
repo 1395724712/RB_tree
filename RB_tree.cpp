@@ -1,5 +1,7 @@
 #include "RB_tree.h"
 
+#include <cstdlib>
+
 void leftRotate(RB_TreeNode* curNode)
 {
 	/*
@@ -180,5 +182,134 @@ void insertFixup(RB_TreeNode * root, RB_TreeNode * cur)
 	//如果以父节点为空跳出(case 1),则根节点并未发生变化,修改根节点为黑色
 	head->col = BLACK;
 	
+}
+
+void earse(RB_TreeNode* root, nodeValType v)
+{
+	/*
+	 * 功能：删除值为v的节点
+	 * 描述：过程实在是复杂，没怎么看明白，我代码都快背下来了，还没看明白原理
+	 * 过程：1 查找值为v的节点
+	 * 2 寻找替换节点：两种情况，删除节点有两个非空子节点，删除节点有一个或没有非空子节点
+	 * 3 替换，修改指针指向
+	 * 4 保存取代指针的指向作为依据
+	 * 5 获得父节点指针和子节点指针传入进行修正
+	 */
+
+	//1 寻找被删除节点
+	RB_TreeNode* delNode = root;
+	while(delNode!=nullptr&&delNode->val!=v)
+	{
+		if (delNode->val > v) delNode = delNode->left;
+		else delNode = delNode->right;
+	}
+
+	if(delNode==nullptr)
+	{//节点不存在
+		return;
+	}
+
+	RB_TreeNode* repNode;
+	RB_TreeNode* father;
+	COL color;
+	RB_TreeNode* child;
+	
+	//case 1 删除节点有一个或没有非空节点
+	//在这种情况下，子节点为替换节点
+	//颜色为删除节点的颜色
+	//父节点为删除节点的父节点
+	if(delNode->left==nullptr||delNode->right==nullptr)
+	{
+		//2 寻找替换节点
+		if (delNode->left != nullptr) repNode = delNode->left;
+		else repNode = delNode->right;
+
+		//3 保存纠正信息
+		color = delNode->col;
+		father = delNode->par;
+		child = repNode;
+		
+		//开始替换
+		if(father == nullptr)
+		{
+			//如果被删除节点是根节点
+			head = repNode;
+		}
+		else
+		{
+			if (delNode == father->left) father->left = repNode;
+			else father->right = repNode;
+		}
+
+		if(repNode!=nullptr) repNode->par = father;//注意替代节点为空的情况
+
+		//4 修正
+		if (color == BLACK) earseFixup(root, child, father);
+
+		free(delNode);
+	}
+	else
+	{
+		// case 2 被删除节点有两个非空子节点
+		//子节点为替换节点的右孩子
+		//父节点为替换节点的父节点
+		//颜色为替换节点的颜色
+		//步骤：1 寻找替换节点
+		// 2 保存修正信息
+		//3 替换
+		//4 运行修正
+
+		// 1 寻找替换节点
+		repNode = delNode->right;
+		while (repNode->left != nullptr)
+			repNode = repNode->left;
+
+		//2 保存修正信息
+		father = repNode->par;
+		color = repNode->col;
+		child = repNode->right;
+
+		// 3 替换
+		//首先修改child节点的指向
+		if(father!=delNode)
+		{
+			//替换节点不是删除节点的子节点，修改child节点指向
+			if (child != nullptr) child->par = father;
+			father->left = child;
+		}
+		else
+		{//替换节点是删除节点的子节点，修改father指针
+			father = repNode;
+		}
+
+		//修改替换节点
+		if(delNode->par==nullptr)
+		{
+			head = repNode;
+			repNode->par = nullptr;
+		}
+		else
+		{
+			repNode->par = delNode->par;
+			if (delNode == delNode->par->left) delNode->par->left = repNode;
+			else delNode->par->right = repNode;
+		}
+
+		//修改替换节点信息
+		repNode->col = delNode->col;
+		repNode->left = delNode->left;
+		delNode->left->par = repNode;
+		if(delNode->right!=repNode)
+		{//这一步之所以不和前面的合并是为了提高可读性
+			repNode->right = delNode->right;
+			delNode->right->par = repNode;
+		}
+
+		if(color==BLACK)
+		{
+			earseFixup(root, child, father);
+		}
+		free(delNode);
+	}
 }
 
