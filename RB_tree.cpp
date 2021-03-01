@@ -184,7 +184,7 @@ void insertFixup(RB_TreeNode * root, RB_TreeNode * cur)
 	
 }
 
-void earse(RB_TreeNode* root, nodeValType v)
+void erase(RB_TreeNode* root, nodeValType v)
 {
 	/*
 	 * 功能：删除值为v的节点
@@ -307,9 +307,124 @@ void earse(RB_TreeNode* root, nodeValType v)
 
 		if(color==BLACK)
 		{
-			earseFixup(root, child, father);
+			eraseFixup(child);
 		}
 		free(delNode);
 	}
+}
+
+void eraseFixup(RB_TreeNode * child)
+{
+	/*
+	 * 功能：执行删除后的修正功能
+	 * 描述：根据当前节点和其兄弟节点的颜色来判断执行何种操作
+	 * *我已经快要放弃去理解为什么了*
+	 */
+
+	while((child==nullptr||child->col == BLACK) &&head!=child)
+	{
+		RB_TreeNode* brother;
+		if(child == child->par->left)
+		{
+			//如果当前节点为黑色，则比存在兄弟节点
+			//否则违反性质五
+			brother = child->par->right;
+
+			if(brother->col == RED)
+			{
+				/*
+				 * case 1:如果兄弟节点是红色
+				 * 操作，改兄弟节点为黑色，父节点为红色，左旋，进入case 2
+				 */
+				brother->col = BLACK;
+				child->par->col = RED;
+				leftRotate(child->par);
+			}
+			else if((brother->left==nullptr||brother->left->col == BLACK)
+				&&(brother->right==nullptr||brother->right->col == BLACK))
+			 {
+				 /*
+				  * case 2: 兄弟节点为黑色，且兄弟节点的子节点均为黑色
+				  * 操作：兄弟节点改红色，以父节点为新的当前节点
+				  */
+
+				brother->col = RED;
+				child = child->par;
+			 }
+			else if((brother->left!=nullptr&&brother->left->col == RED)
+				&&(brother->right==nullptr||brother->right->col==BLACK))
+			{
+				/*
+				 * case 3:兄弟节点的左节点为红色，右节点为黑色
+				 * 操作：交换兄弟节点和兄弟左孩子节点的颜色，以兄弟节点为支点右旋
+				 */
+				brother->col = RED;
+				brother->left->col = BLACK;
+				rightRotate(brother);
+			}
+			else
+			{
+				/*
+				 * case 4:兄弟节点的右孩子为红色
+				 * 操作：理解不了，放弃了
+				 * 兄弟节点改成父节点的颜色
+				 * 父节点改黑色
+				 * 兄弟节点的右节点改黑色
+				 * 以父节点为支点左旋
+				 * 以根节点为当前节点
+				 * 跳出循环
+				 */
+				brother->col = child->par->col;
+				child->par->col = BLACK;
+				brother->right->col = BLACK;
+				leftRotate(child->par);
+				child = head;
+			}
+		}
+		else
+		{
+			//当前节点是其根节点的右孩子
+			//左右互换
+			brother = child->par->left;
+			if(brother->col == RED)
+			{
+				//case 1 兄弟节点是红色
+				//兄弟节点改黑色
+				//父节点改红色
+				//右旋
+				brother->col = BLACK;
+				child->par->col = RED;
+				rightRotate(child->par);
+			}
+			else if((brother->left==nullptr||brother->left->col==BLACK)
+				&&(brother->right==nullptr||brother->right->col==BLACK))
+			{
+				//case 2 兄弟节点黑色，左右孩子节点也均为黑色
+				//改兄弟节点为红，以父节点为当前节点
+				brother->col = RED;
+				child = child->par;
+			}
+			else if((brother->right!=nullptr||brother->right->col == RED)&&(brother->left==nullptr||brother->left->col == BLACK))
+			{
+				//todo:我怎么感觉应该是右孩子为红色，左孩子为黑色，然后左旋
+				//case 3 兄弟节点为黑色，左孩子为红色，右孩子为黑色
+				//交换兄弟节点和其左孩子的颜色，以兄弟节点为支点左旋
+				brother->col = RED;
+				brother->right->col = BLACK;
+				leftRotate(brother);
+			}
+			else
+			{
+				//case 4 兄弟节点为黑色，左孩子为红色
+				brother->col = child->par->col;
+				child->par->col = BLACK;
+				brother->left->col = BLACK;
+				rightRotate(child->par);
+				child = head;
+			}
+		}
+	}
+
+	if (child != nullptr) child->col = BLACK;//只要节点存在就改为黑色
 }
 
