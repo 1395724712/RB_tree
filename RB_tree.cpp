@@ -2,6 +2,7 @@
 
 #include <cstdlib>
 
+RB_TreeNode* head = nullptr;
 void leftRotate(RB_TreeNode* curNode)
 {
 	/*
@@ -15,7 +16,7 @@ void leftRotate(RB_TreeNode* curNode)
 	//首先curNode节点获得新的右子树
 	curNode->right = newRoot->left;
 	newRoot->left = curNode;
-	curNode->right->par = curNode;
+	if(curNode->right!=nullptr)curNode->right->par = curNode;
 
 	//接着修改curNode的父节点
 	RB_TreeNode* curGar = curNode->par;
@@ -44,7 +45,7 @@ void rightRotate(RB_TreeNode* curNode)
 	//首先curNode节点获得新的左子树
 	curNode->left = newFar->right;
 	newFar->right = curNode;
-	curNode->left->par = curNode;
+	if(curNode->left!=nullptr) curNode->left->par = curNode;
 	
 	
 	// 接着修改curNode的父节点
@@ -99,8 +100,8 @@ void insert(RB_TreeNode * root, nodeValType v)
 	curNode->par = curPar;
 	
 	//修改指针指向
-	if (curPar->val < v) curPar->left = curNode;
-	else curPar->right = curNode;
+	if (curPar->val < v) curPar->right = curNode;
+	else curPar->left = curNode;
 
 	//运行修正函数
 	insertFixup(root, curNode);
@@ -144,13 +145,17 @@ void insertFixup(RB_TreeNode * root, RB_TreeNode * cur)
 				cur = Far;
 				leftRotate(cur);
 			}
+			else
+			{
+				//case 3 叔叔节点为黑色,当前节点为其父节点的左孩子
+				//处理方式: 父节点改成黑色,祖父节点改成红色,以祖父节点为支点右旋
+				//必会导致跳出,父节点必定为黑色,根节点发生变化,变为父节点
+				Far->col = BLACK;
+				Gar->col = RED;
+				rightRotate(Gar);
+			}
 
-			//case 3 叔叔节点为黑色,当前节点为其父节点的左孩子
-			//处理方式: 父节点改成黑色,祖父节点改成红色,以祖父节点为支点右旋
-			//必会导致跳出,父节点必定为黑色,根节点发生变化,变为父节点
-			Far->col = BLACK;
-			Gar->col = RED;
-			rightRotate(Gar);
+			
 
 		}
 		else
@@ -170,10 +175,12 @@ void insertFixup(RB_TreeNode * root, RB_TreeNode * cur)
 				cur = Far;
 				rightRotate(cur);
 			}
-			Far->col = BLACK;
-			Gar->col = RED;
-			leftRotate(Gar);
-			
+			else
+			{
+				Far->col = BLACK;
+				Gar->col = RED;
+				leftRotate(Gar);
+			}
 		}
 		
 	}
@@ -244,7 +251,7 @@ void erase(RB_TreeNode* root, nodeValType v)
 		if(repNode!=nullptr) repNode->par = father;//注意替代节点为空的情况
 
 		//4 修正
-		if (color == BLACK) earseFixup(root, child, father);
+		if (color == BLACK) eraseFixup(child);
 
 		free(delNode);
 	}

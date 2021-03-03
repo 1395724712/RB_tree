@@ -14,7 +14,7 @@ struct RB_TreeNode
 	RB_TreeNode(nodeValType x,RB_TreeNode *l,RB_TreeNode *r):val(x),left(l),right(r){}
 };
 
-RB_TreeNode* head(0);//这是指向根节点的指针
+extern RB_TreeNode* head;//这是指向根节点的指针
 
 
 //左旋
@@ -30,8 +30,8 @@ void insert(RB_TreeNode* root, nodeValType v);
 void insertFixup(RB_TreeNode* root, RB_TreeNode *cur);
 
 //删除
-void earse(RB_TreeNode* root, nodeValType v);
+void erase(RB_TreeNode* root, nodeValType v);
 
 //删除后的修正
-void earseFixup(RB_TreeNode* root, RB_TreeNode* child,RB_TreeNode *father);
+void eraseFixup(RB_TreeNode* child);
 
